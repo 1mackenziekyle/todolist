@@ -1,0 +1,1 @@
+A simple todo list using Embedded JavaScript Templates
