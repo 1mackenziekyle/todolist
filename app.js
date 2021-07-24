@@ -4,60 +4,39 @@
  *  - Listens on Port 3000
  *  - Gets the root directory and sends 'hello' on the response
  */
-// const express = require('express');
-// const bodyParser = require('body-parser');
-
-// const app = express();
-// app.use(bodyParser({extended: true}));
-// app.set('view engine', 'ejs');
-
-// // Set home page
-// app.get("/", (req,res) => { 
-//     res.render('index', {foo: 'FOO'} );
-// } );
-
-
-// // Listen on 3000
-
-// app.listen(3000, () => { console.log("listening on 3000."); } );
 
 let express = require('express');
+let bodyParser = require('body-parser');
 let app = express();
+app.use(bodyParser({ extended: true } ) );
+app.use(express.static("public"));
+let items = [];
 
 app.set('view engine', 'ejs');
 
+/* Set the home page to display the date*/
 app.get('/', (req, res) => {
-    var today = new Date();
-    var day;
-    switch (today.getDay()) {
-        case 0:
-            day = 'Sunday'
-            break;
-        case 1:
-            day = 'Monday'
-            break;
-        case 2:
-            day = 'Tuesday'
-            break;
-        case 3:
-            day = 'Wednesday'
-            break;
-        case 4:
-            day = 'Thursday'
-            break;
-        case 5:
-            day = 'Friday'
-            break;
-        case 6:
-            day = 'Saturday'
-            break;
-        default:
-            console.log('Error: Current day is equal to ' + day);
-            break;
-    }
+    let today = new Date();
+    let options = {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    };
+    let date = today.toLocaleDateString("en-US", options);
+
+    /* Render list.ejs from views */
     res.render('list', {
-        kindOfDay: day
+        kindOfDay: date,
+        listItems: items
     });
 });
 
-app.listen(4000, () => console.log('Example app listening on port 4000!'));
+app.post("/", (req, res) => { // each new input
+    let item = req.body.newItem;
+    items.push(item);
+    res.redirect('back');
+});
+
+
+app.listen(4000, () => console.log('App listening on port 4000.'));
