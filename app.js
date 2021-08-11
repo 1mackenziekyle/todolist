@@ -10,6 +10,10 @@
 // Dependencies
 let express = require('express');
 let bodyParser = require('body-parser');
+let mongoose = require('mongoose');
+
+// Set up app
+mongoose.connect('mongodb://localhost:27017/todolistDB', {useNewUrlParser: true});
 let date = require(__dirname + "/date.js");
 let app = express();
 app.set('view engine', 'ejs');
@@ -18,6 +22,12 @@ app.use(bodyParser({
 }));
 app.use(express.static("public"));
 
+// Mongoose Schema
+
+const itemschema = {
+    name: String,
+    required: true
+}
 // Items
 let items = ['Pick up mail', 'Buy milk and eggs', 'work out 30 mins'];
 let workItems = [];
