@@ -1,128 +1,159 @@
-/* 
- * Website: https://serene-meadow-63566.herokuapp.com/  
- * App.js Template
- *  - Requires express and body parser
- *  - Creates an instance of express called 'app'
- *  - Listens on Port 3000
- *  - Gets the root directory and sends 'hello' on the response
- */
+//jshint esversion:6
 
-// Dependencies
-let express = require('express');
-let bodyParser = require('body-parser');
-let mongoose = require('mongoose');
+const express = require("express");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const _ = require("lodash");
 
+const app = express();
 
-// Connect to the mongoose database
-mongoose.connect('mongodb://localhost:27017/todolistDB', {
-    useNewUrlParser: true
-});
-
-// Normal express.js App setup
-let app = express();
 app.set('view engine', 'ejs');
-app.use(bodyParser({
-    extended: true
+
+app.use(bodyParser.urlencoded({
+  extended: true
 }));
 app.use(express.static("public"));
 
-// Mongoose Schema
-const itemSchema = { name: String }
-const Item = mongoose.model('Item', itemSchema);
+mongoose.connect("mongodb://localhost:27017/todolistDB", {
+  useNewUrlParser: true
+});
 
-// Default items
+const itemsSchema = {
+  name: String
+};
+
+const Item = mongoose.model("Item", itemsSchema);
+
+
 const item1 = new Item({
-    name: "Work out"
+  name: "Welcome to your todolist!"
 });
+
 const item2 = new Item({
-    name: "Buy food"
+  name: "Hit the + button to add a new item."
 });
+
 const item3 = new Item({
-    name: "Cook Food"
+  name: "<-- Hit this to delete an item."
 });
+
 const defaultItems = [item1, item2, item3];
 
-// Add default items if todo list empty. Else, show length of list.
-Item.find({}, (err, foundItems) => {
-    /* .find function:
-     * Params:
-     * First parameter: the condition that each object found will satisfy. Called the 'filter', is a JS object.
-     * Optional" Fields to return, then options
-     * Final parameter: callback function which we pass the found items into, 
-    */
-    console.log("Length: ");
-    console.log(foundItems.length);
+const listSchema = {
+  name: String,
+  items: [itemsSchema]
+};
+
+const List = mongoose.model("List", listSchema);
+
+
+app.get("/", function (req, res) {
+
+  Item.find({}, function (err, foundItems) {
+
     if (foundItems.length === 0) {
-        Item.insertMany(defaultItems, (err) => {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log("Successfully added default items to database.");
-                res.redirect('/');
-            }
-        });
-    }
-});
-
-
-
-
-/*  MAIN PAGE */
-app.get('/', (req, res) => {
-    // Find all items
-    Item.find((err, items) => { // Item is the collection, items is the result
+      Item.insertMany(defaultItems, function (err) {
         if (err) {
-            console.log(err);
+          console.log(err);
         } else {
-            res.render("list", {
-                listTitle: "Today",
-                listItems: items,
-            });
+          console.log("Successfully savevd default items to DB.");
         }
-    });
+      });
+      res.redirect("/");
+    } else {
+      res.render("list", {
+        listTitle: "Today",
+        newListItems: foundItems
+      });
+    }
+  });
 });
 
-app.post("/", (req, res) => { // each new input
-    let itemName = req.body.newItem;
+app.get("/:customListName", function (req, res) {
+  const customListName = _.capitalize(req.params.customListName);
 
-    let item = new Item({
-        name: itemName
-    });
+  List.findOne({
+    name: customListName
+  }, function (err, foundList) {
+    if (!err) {
+      if (!foundList) {
+        //Create a new list
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        });
+        list.save();
+        res.redirect("/" + customListName);
+      } else {
+        //Show an existing list
 
+        res.render("list", {
+          listTitle: foundList.name,
+          newListItems: foundList.items
+        });
+      }
+    }
+  });
+
+
+
+});
+
+app.post("/", function (req, res) {
+
+  const itemName = req.body.newItem;
+  const listName = req.body.list;
+
+  const item = new Item({
+    name: itemName
+  });
+
+  if (listName === "Today") {
     item.save();
-
-    res.redirect('/')
-    
-});
-
-
-// Delete route
-app.post("/delete", (req,res) => {
-    Item.findByIdAndRemove(req.body.checkbox, (err) => {
-        if (!err) {
-            console.log("Successfully deleted item: ");
-            console.log(req.body.checkbox);
-        }
-        else {
-            console.log(err);
-        }
+    res.redirect("/");
+  } else {
+    List.findOne({
+      name: listName
+    }, function (err, foundList) {
+      foundList.items.push(item);
+      foundList.save();
+      res.redirect("/" + listName);
     });
+  }
+});
 
-    res.redirect('/');
-} );
+app.post("/delete", function (req, res) {
+  const checkedItemId = req.body.checkbox;
+  const listName = req.body.listName;
 
-// WORK PAGE
-app.get("/work", function (req, res) {
-    res.render("list", {
-        listTitle: "Work List",
-        newListItems: workItems
+  if (listName === "Today") {
+    Item.findByIdAndRemove(checkedItemId, function (err) {
+      if (!err) {
+        console.log("Successfully deleted checked item.");
+        res.redirect("/");
+      }
     });
+  } else {
+    List.findOneAndUpdate({
+      name: listName
+    }, {
+      $pull: {
+        items: {
+          _id: checkedItemId
+        }
+      }
+    }, function (err, foundList) {
+      if (!err) {
+        res.redirect("/" + listName);
+      }
+    });
+  }
 });
 
-// ABOUT PAGE
-app.get("/about", (req, res) => {
-    res.render("about");
+app.get("/about", function (req, res) {
+  res.render("about");
 });
 
-// app.listen(process.env.PORT || 4000, () => console.log('App listening on port 4000.'));
-app.listen(4000, () => console.log('App listening on port 4000.'));
+app.listen(3000, function () {
+  console.log("Server started on port 3000");
+});

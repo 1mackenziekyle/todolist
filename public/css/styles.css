@@ -1,23 +1,20 @@
 html {
   background-color: #E4E9FD;
-  background-image: -webkit-linear-gradient(0deg, #ffa600 50%, #ffd17b 50%);
+  background-image: -webkit-linear-gradient(65deg, #A683E3 50%, #E4E9FD 50%);
   min-height: 1000px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  
+  font-family: 'helvetica neue';
 }
 
 h1 {
-  color: rgb(0, 0, 0);
+  color: #fff;
   padding: 10px;
-  text-align: center;
-  align-items: center;
 }
 
 .box {
   max-width: 400px;
   margin: 50px auto;
   background: white;
-  border-radius: 7px;
+  border-radius: 5px;
   box-shadow: 5px 5px 15px -5px rgba(0, 0, 0, 0.3);
 }
 
@@ -39,7 +36,7 @@ h1 {
 
 input:checked+p {
   text-decoration: line-through;
-  text-decoration-color: #ff8800;
+  text-decoration-color: #A683E3;
 }
 
 input[type="checkbox"] {
@@ -59,18 +56,16 @@ form.item {
   margin-left: 20px;
 }
 
-
 button {
   min-height: 50px;
   width: 50px;
   border-radius: 50%;
   border-color: transparent;
-  background-color: #e08700;
+  background-color: #A683E3;
   color: #fff;
   font-size: 30px;
-  padding: 6px;
+  padding-bottom: 6px;
   border-width: 0;
-  vertical-align: center;
 }
 
 input[type="text"] {
@@ -80,14 +75,13 @@ input[type="text"] {
   border: none;
   background: transparent;
   font-size: 20px;
-  font-weight: 100;
+  font-weight: 200;
   width: 313px;
-  color: grey;
 }
 
 input[type="text"]:focus {
   outline: none;
-  box-shadow: inset 0 -3px 0 0 #fcac00;
+  box-shadow: inset 0 -3px 0 0 #A683E3;
 }
 
 ::placeholder {
@@ -97,12 +91,6 @@ input[type="text"]:focus {
 
 footer {
   color: white;
+  color: rgba(0, 0, 0, 0.5);
   text-align: center;
-  font-size: 2rem;
-  font-weight: 200;
-}
-
-.center {
-  text-align: center;
-  padding: 1% 5% 5% 5%;
 }
